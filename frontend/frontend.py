@@ -7,7 +7,7 @@ st.set_page_config(
     layout="wide"
 )
 
-API_URL = "http://localhost:8000/predict"
+API_URL = "http://204.236.253.180:8000/predict"
 
 st.markdown("""
     <style>

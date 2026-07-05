@@ -1,17 +1,6 @@
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field, computed_field, field_validator
 from typing import Literal
-import pickle
-import pandas as pd
 
-# import ml model
-with open('model.pkl', 'rb') as f:
-    model = pickle.load(f)
-
-app = FastAPI()
-
-# pydantic model
 class UserInput(BaseModel):
     age: int = Field(..., gt=0, lt=120)
     gender: Literal['male', 'female'] = Field(...)
@@ -26,6 +15,12 @@ class UserInput(BaseModel):
     risk_score: float = Field(..., gt=0, lt=9)
     is_high_risk: bool = Field(...)
     num_children: int = Field(...)
+
+    @field_validator('region')
+    @classmethod
+    def normalize_region(cls, v:str)-> str:
+        v = v.strip().lower()
+        return v
 
     @computed_field
     @property
@@ -61,28 +56,3 @@ class UserInput(BaseModel):
             return 0
         else:
             return 1
-
-@app.post('/predict')
-def predict_insurance(data: UserInput):
-
-    # we want to give one row at a time as input 
-    # and input should be in form of pandas dataframe
-
-    input_df = pd.DataFrame([{
-        'age_group': data.age_group,
-        'sex': data.sex,
-        'bmi': data.bmi,
-        'children': data.num_children,
-        'smoker': data.smoker,
-        'is_high_risk': data.is_high_risk,
-        'risk_score': data.risk_score,
-        'region': data.region,
-        'charges': data.charges,
-        'monthly_premium_est': data.monthly_premium_est,
-        'charges_per_child': data.charges_per_child,
-        'bmi_age_interaction': data.bmi_age_interaction
-    }])
-
-    prediction = model.predict(input_df)[0]
-
-    return JSONResponse(status_code=200, content={'predicted_category': prediction})

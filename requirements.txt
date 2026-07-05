@@ -1,0 +1,13 @@
+fastapi
+jsonschema
+numpy
+pandas
+pillow
+protobuf
+pydantic
+pydantic_core
+python-multipart
+requests
+scikit-learn
+starlette
+uvicorn
